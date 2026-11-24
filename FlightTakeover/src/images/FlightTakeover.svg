@@ -1,0 +1,17 @@
+
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 48 48">
+    <circle
+        cx="24"
+        cy="24"
+        r="20"
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="1.5"
+        stroke-dasharray="22 9.4"
+    />
+    <path
+        fill="#ffffff"
+        d="M24 7c-2 0-3 3-3 6v7L8 29v4l13-5v8l-5 4v2l8-2 8 2v-2l-5-4v-8l13 5v-4l-13-9v-7c0-3-1-6-3-6Z"
+    />
+</svg>

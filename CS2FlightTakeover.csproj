@@ -1,0 +1,58 @@
+﻿
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Configurations>Debug;Release</Configurations>
+    <AssemblyName>CS2FlightTakeover</AssemblyName>
+    <TargetName>CS2FlightTakeover</TargetName>
+    <RootNamespace>CS2FlightTakeover</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CSII_TOOLPATH)' == ''">
+    <CSII_TOOLPATH>$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))</CSII_TOOLPATH>
+  </PropertyGroup>
+
+  <Import Project="$(CSII_TOOLPATH)/Mod.props"
+          Condition="Exists('$(CSII_TOOLPATH)/Mod.props')" />
+
+  <ItemGroup>
+    <Reference Include="Game"><Private>false</Private></Reference>
+    <Reference Include="Colossal.Core"><Private>false</Private></Reference>
+    <Reference Include="Colossal.Logging"><Private>false</Private></Reference>
+    <Reference Include="Colossal.IO.AssetDatabase"><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><Private>false</Private></Reference>
+    <Reference Include="Colossal.UI"><Private>false</Private></Reference>
+    <Reference Include="Colossal.UI.Binding"><Private>false</Private></Reference>
+    <Reference Include="Unity.InputSystem"><Private>false</Private></Reference>
+    <Reference Include="Unity.Entities"><Private>false</Private></Reference>
+    <Reference Include="Unity.Collections"><Private>false</Private></Reference>
+    <Reference Include="Unity.Mathematics"><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <Import Project="$(CSII_TOOLPATH)/Mod.targets"
+          Condition="Exists('$(CSII_TOOLPATH)/Mod.targets')" />
+
+	<Target Name="BuildUI"
+		   AfterTargets="AfterBuild"
+		   Condition="'$(SkipReactUI)' != 'true'">
+
+		<Exec Command="npm.cmd install"
+			  WorkingDirectory="$(ProjectDir)FlightTakeover"
+			  Condition="!Exists('$(ProjectDir)FlightTakeover/node_modules')" />
+
+		<Exec Command="npm.cmd run build"
+			  WorkingDirectory="$(ProjectDir)FlightTakeover" />
+
+	</Target>
+
+  <Target Name="RequireCS2Toolchain"
+          BeforeTargets="Build"
+          Condition="!Exists('$(CSII_TOOLPATH)/Mod.props')">
+
+    <Error Text="CS2 toolchain missing. Set CSII_TOOLPATH to directory containing Mod.props and Mod.targets." />
+
+  </Target>
+
+</Project>
