@@ -1,0 +1,46 @@
+<Publish>
+
+	<ModId Value="168949" />
+	<DisplayName Value="Nyoko's Flight Simulator" />
+
+	<ShortDescription Value="Take control of aircraft and fly around your city. Supports keyboard, controllers, and HOTAS devices." />
+
+	<LongDescription>
+		Description.md
+	</LongDescription>
+
+	<!-- Main thumbnail -->
+	<Thumbnail Value="Properties/PDX_TMB.png" />
+
+	<!-- Gallery screenshots -->
+	<Screenshot Value="Properties/Thumbnail.png" />
+	<Screenshot Value="Properties/Thumbnai2l.png" />
+	<Screenshot Value="Properties/THUMBNAIL3.png" />
+	<Screenshot Value="Properties/THUMBNAIL4.png" />
+	<Screenshot Value="Properties/THUMBNAIL5.png" />
+	<Screenshot Value="Properties/THUMBNAIL6.png" />
+	<Screenshot Value="Properties/THUMBNAIL7.png" />
+	<Screenshot Value="Properties/THUMBNAIL8.png" />
+	<Screenshot Value="Properties/THUMBNAIL9.png" />
+
+	<!-- Category -->
+	<Tag Value="Code Mod" />
+
+	<!-- Official discussion thread -->
+	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/nyokos-flight-simulator.1951619/" />
+	
+	<!-- Version -->
+	<ModVersion Value="v0.3 Alpha" />
+
+	<!-- Game compatibility -->
+	<GameVersion Value="1.6.*" />
+
+	<!-- Changelog -->
+	<ChangeLog Value="Modern aircraft selection menu." />
+
+	<!-- External links -->
+	<ExternalLink Type="discord" Url="https://discord.gg/5gZgRNm29e" />
+	<ExternalLink Type="paypal" Url="https://paypal.me/nyokodev" />
+	<ExternalLink Type="ko-fi" Url="https://ko-fi.com/devnyoko" />
+
+</Publish>

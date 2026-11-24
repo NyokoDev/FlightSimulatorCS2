@@ -1,12 +1,13 @@
-using System;
-using System.Globalization;
-using Game.Objects;
-using Unity.Mathematics;
 using Colossal.UI.Binding;
 using CS2FlightTakeover.Systems;
 using Game;
+using Game.Objects;
+using Game.Prefabs;
 using Game.UI;
+using System;
+using System.Globalization;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace CS2FlightTakeover.UI
 {
@@ -18,6 +19,10 @@ namespace CS2FlightTakeover.UI
         private AircraftTakeoverSystem Takeover => World.GetExistingSystemManaged<AircraftTakeoverSystem>();
         private AircraftCameraSystem Camera => World.GetExistingSystemManaged<AircraftCameraSystem>();
         private FlightInputSystem Input => World.GetExistingSystemManaged<FlightInputSystem>();
+
+        private ImageSystem Images =>
+    World.GetExistingSystemManaged<ImageSystem>();
+
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -65,16 +70,39 @@ namespace CS2FlightTakeover.UI
         }
         private string[] GetAircraft()
         {
-            if (Discovery == null) return Array.Empty<string>();
+            if (Discovery == null)
+                return Array.Empty<string>();
+
             var entries = Discovery.Entries;
             var result = new string[entries.Count];
+
             for (int i = 0; i < entries.Count; i++)
             {
                 var e = entries[i];
-                result[i] = e.Entity.Index + "|" + e.Entity.Version + "|" + (e.Kind ?? "Aircraft").Replace("|", " ") + "|" + e.Speed.ToString("0.0", CultureInfo.InvariantCulture);
+
+                string name = (e.Kind ?? "Aircraft")
+                    .Replace("|", " ");
+
+                string speed = e.Speed.ToString(
+                    "0.0",
+                    CultureInfo.InvariantCulture
+                );
+
+                string thumbnail = GetAircraftThumbnail(e.Entity);
+
+                result[i] = string.Join(
+                    "|",
+                    e.Entity.Index,
+                    e.Entity.Version,
+                    name,
+                    speed,
+                    thumbnail
+                );
             }
+
             return result;
         }
+
         private string GetTelemetry()
         {
             if (Takeover == null) return "0|0|0|0|0";
@@ -88,6 +116,34 @@ namespace CS2FlightTakeover.UI
             if (Takeover != null && Takeover.Active) Takeover.Stop();
             if (Camera != null) Camera.FollowEnabled = true;
         }
+
+        private string GetAircraftThumbnail(Entity aircraft)
+        {
+            if (aircraft == Entity.Null)
+                return string.Empty;
+
+            if (!EntityManager.Exists(aircraft))
+                return string.Empty;
+
+            if (!EntityManager.HasComponent<PrefabRef>(aircraft))
+                return string.Empty;
+
+            Entity prefab = EntityManager
+                .GetComponentData<PrefabRef>(aircraft)
+                .m_Prefab;
+
+            if (prefab == Entity.Null)
+                return string.Empty;
+
+            if (!EntityManager.Exists(prefab))
+                return string.Empty;
+
+            if (Images == null)
+                return string.Empty;
+
+            return Images.GetThumbnail(prefab) ?? string.Empty;
+        }
+
         private static bool TryParseEntity(string id, out Entity entity)
         {
             entity = Entity.Null;

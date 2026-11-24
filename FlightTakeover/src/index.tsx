@@ -55,10 +55,152 @@ function BoundaryPanel(){const [mode,extent,warning]=useValue(boundary$).split("
 function BoundaryReadout(){const [mode,,warning,distance,vs]=useValue(boundary$).split("|");return <><div className="ft-line"><span>Vertical speed</span><b>{Math.round(Number(vs)*196.85)} ft/min</b></div><div className="ft-line"><span>Estimated boundary</span><b>{distance} m</b></div>{mode!=="Unrestricted"&&Number(distance)<Number(warning)&&<div className="ft-status">MAP BOUNDARY WARNING</div>}<button onClick={()=>send("ReturnToMap")}>Return to map</button></>}
 function Instruments(){const t=useValue(telemetry$).split("|").map(Number), flying=useValue(flying$); const pitch=t[2]||0, bank=t[3]||0;return <>{!flying?<p>Take control of an aircraft to display manual flight telemetry.</p>:<><div className="ft-instruments"><div><small>GROUND SPEED</small><strong>{Math.round((t[0]||0)*1.94384)}</strong><small>KT</small></div><div className="ft-horizon"><div className="ft-world" style={{transform:`rotate(${-bank}deg) translateY(${pitch*1.5}rem)`}}><div className="ft-sky"/><div className="ft-earth"/></div><div className="ft-cross">— ◇ —</div></div><div><small>MAP ALT</small><strong>{Math.round((t[5]||0)*3.28084)}</strong><small>FT</small></div></div><div className="ft-readouts"><span>HDG* <b>{Math.round(((t[4]||0)%360+360)%360)}°</b></span><span>PITCH <b>{pitch.toFixed(1)}°</b></span><span>BANK <b>{bank.toFixed(1)}°</b></span></div><div className="ft-line"><span>Throttle</span><b>{Math.round((t[1]||0)*100)}%</b></div><div className="ft-meter"><i style={{width:`${Math.max(0,Math.min(100,(t[1]||0)*100))}%`}}/></div><BoundaryReadout/><small>* Model heading; attitude is based on existing flight model.</small></>}</>}
 function CameraPanel(){const selected=useValue(selected$), mode=useValue(mode$), following=useValue(following$), distance=Number(useValue(distance$))||65, angles=useValue(angles$).split("|").map(Number);return <><div className="ft-section">VIEW MODE</div><div className="ft-row">{["Chase","Orbit","Pilot"].map(m=><button key={m} disabled={!selected} className={following&&mode===m?"ft-selected":""} onClick={()=>send("SetCameraMode",m)}>{m}</button>)}</div>{!selected?<p>Select an aircraft to activate the camera.</p>:<><Range label="Distance" value={distance} min={10} max={2000} step={5} unit=" m" change={v=>send("SetCameraDistance",String(v))}/><Range label="Azimuth" value={angles[0]||0} min={-180} max={180} unit="°" change={v=>send("CameraAngle","Azimuth|"+v)}/><Range label="Elevation" value={angles[1]||0} min={-10} max={80} unit="°" change={v=>send("CameraAngle","Elevation|"+v)}/><div className="ft-row"><button onClick={()=>{send("SetCameraDistance","65");send("CameraAngle","Azimuth|0");send("CameraAngle","Elevation|18")}}>Recenter</button><button onClick={()=>send("Follow")}>{following?"Restore city camera":"Follow aircraft"}</button></div></>}</>}
-function Aircraft(){const raw=useValue(aircraft$), selected=useValue(selected$), flying=useValue(flying$);const [query,setQuery]=useState("");const rows=useMemo(()=>raw.map(s=>{const [i,v,name,speed]=s.split("|");return {id:i+":"+v,name:name||"Aircraft",speed:Number(speed)||0}}).filter(r=>r.name.toLowerCase().includes(query.toLowerCase())),[raw,query]);return <><div className="ft-line"><b>{raw.length} aircraft detected</b><span>{flying?"Selection locked":"Available"}</span></div><input className="ft-search" placeholder="Search aircraft…" value={query} onChange={e=>setQuery(e.target.value)}/><div className="ft-list">{rows.map(r=><button key={r.id} disabled={flying} className={selected===r.id?"ft-selected":""} onClick={()=>send("Select",r.id)}><span>{r.name}<small>{selected===r.id?"Selected":"Available"}</small></span><b>{Math.round(r.speed*1.94384)} kt</b></button>)}{!rows.length&&<p>No matching aircraft.</p>}</div><div className="ft-row"><button disabled={!selected} onClick={()=>send(flying?"Stop":"TakeControl")}>{flying?"Stop flight":"Take control"}</button><button disabled={!selected} onClick={()=>send("Release")}>Release</button></div></>}
+function Aircraft() {
+    const raw = useValue(aircraft$);
+    const selected = useValue(selected$);
+    const flying = useValue(flying$);
+
+    const [query, setQuery] = useState("");
+
+    const rows = useMemo(() => {
+        return raw
+            .map(s => {
+                const [i, v, name, speed, ...thumbnailParts] =
+                    s.split("|");
+
+                return {
+                    id: `${i}:${v}`,
+                    name: name || "Aircraft",
+                    speed: Number(speed) || 0,
+                    thumbnail: thumbnailParts.join("|")
+                };
+            })
+            .filter(r =>
+                r.name.toLowerCase().includes(query.toLowerCase())
+            );
+    }, [raw, query]);
+
+    return (
+        <div className="ft-aircraft-menu">
+            <div className="ft-aircraft-heading">
+                <h2>Select aircraft</h2>
+                <span>{raw.length} aircraft detected</span>
+            </div>
+
+            <input
+                className="ft-search"
+                placeholder="Search aircraft..."
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+            />
+
+            <div className="ft-aircraft-grid">
+                {rows.map(r => {
+                    const active = selected === r.id;
+                    const controlled = active && flying;
+                    const locked = flying && !active;
+
+                    return (
+                        <div
+                            key={r.id}
+                            className={[
+                                "ft-aircraft-card",
+                                active ? "is-selected" : "",
+                                controlled ? "is-controlled" : "",
+                                locked ? "is-locked" : ""
+                            ].join(" ")}
+                        >
+                            <div
+                                className="ft-aircraft-preview"
+                                onClick={() => {
+                                    if (!flying)
+                                        send("Select", r.id);
+                                }}
+                            >
+                                <span
+                                    className="ft-aircraft-placeholder"
+                                    aria-hidden="true"
+                                >
+                                    ✈
+                                </span>
+
+                                {r.thumbnail && (
+                                    <img
+                                        key={r.thumbnail}
+                                        src={r.thumbnail}
+                                        alt={r.name}
+                                        onError={e => {
+                                            e.currentTarget.style.display =
+                                                "none";
+                                        }}
+                                    />
+                                )}
+
+                                <span className="ft-aircraft-speed">
+                                    {Math.round(r.speed * 1.94384)} KT
+                                </span>
+
+                                {controlled && (
+                                    <span className="ft-aircraft-live">
+                                        MANUAL CONTROL
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="ft-aircraft-details">
+                                <strong>{r.name}</strong>
+
+                                <small>
+                                    {controlled
+                                        ? "Manual flight active"
+                                        : active
+                                            ? "Selected aircraft"
+                                            : "Available"}
+                                </small>
+                            </div>
+
+                            <div className="ft-aircraft-actions">
+                                <button
+                                    className={
+                                        controlled
+                                            ? "ft-aircraft-release"
+                                            : "ft-aircraft-primary"
+                                    }
+                                    disabled={locked}
+                                    onClick={() => {
+                                        if (controlled) {
+                                            send("Release");
+                                            return;
+                                        }
+
+                                        if (!active) {
+                                            send("Select", r.id);
+                                        }
+
+                                        send("TakeControl");
+                                    }}
+                                >
+                                    {controlled
+                                        ? "Release"
+                                        : "Take Control"}
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {!rows.length && (
+                <div className="ft-aircraft-empty">
+                    No matching aircraft found.
+                </div>
+            )}
+        </div>
+    );
+}
 function Settings({scale,setScale}:{scale:number,setScale:(n:number)=>void}){const [category,setCategory]=useState("Joystick & HOTAS");const devices=useValue(devices$), selected=useValue(selected$), status=useValue(status$), mode=useValue(mode$);return <div className="ft-settings"><nav>{["General","Joystick & HOTAS","Keyboard","Flight Dynamics","Camera & Views","Interface","Diagnostics"].map(c=><button key={c} className={c===category?"ft-selected":""} onClick={()=>setCategory(c)}>{c}</button>)}</nav><section>{category==="Joystick & HOTAS"?<Controls/>:category==="Flight Dynamics"?<><BoundaryPanel/><CollisionSettings/></>:category==="Camera & Views"?<CameraPanel/>:category==="Interface"?<Range label="Interface scale" value={Math.round(scale*100)} min={80} max={140} step={5} unit="%" change={v=>setScale(v/100)}/>:category==="Keyboard"?<><div className="ft-section">CURRENT FALLBACK ASSIGNMENTS</div><p>Numpad 8 / 2 — Pitch</p><p>Numpad 4 / 6 — Roll</p><p>Numpad 7 / 9 — Yaw</p><p>Numpad + / − — Throttle</p><p>Numpad 5 — Neutral input</p><small>Keyboard remapping and exclusive game input ownership are not implemented in the existing backend.</small></>:category==="Diagnostics"?<><div className="ft-section">BACKEND STATUS</div><p>Input: {status}</p><p>Devices: {devices.join(", ")||"None"}</p><p>Aircraft: {selected?"Selected":"Not selected"}</p><p>Camera: {mode}</p><small>Windows-native WinMM enumeration; see Joystick & HOTAS for raw input diagnostics.</small></>:<><div className="ft-section">FLIGHT TAKEOVER</div><p>Experimental manual aircraft simulation. Use a test save; native routing restoration is not guaranteed.</p></>}</section></div>}
 function Window({name,children,close,width,scale,offset}:{name:string,children:React.ReactNode,close:()=>void,width:number,scale:number,offset:number}){const [collapsed,setCollapsed]=useState(false);const [pos,setPos]=useState({x:20+offset*24,y:130+offset*28});return <div className="ft-window" style={{left:pos.x,top:pos.y,width:`${width*scale}rem`,fontSize:`${15*scale}rem`}}><header onMouseDown={e=>{if(e.button!==0)return;const x=e.clientX-pos.x,y=e.clientY-pos.y;const move=(ev:MouseEvent)=>setPos({x:Math.max(0,Math.min(window.innerWidth-100,ev.clientX-x)),y:Math.max(0,Math.min(window.innerHeight-40,ev.clientY-y))});const up=()=>{document.removeEventListener("mousemove",move);document.removeEventListener("mouseup",up)};document.addEventListener("mousemove",move);document.addEventListener("mouseup",up);e.preventDefault()}}><b>{name}</b><div><button onMouseDown={e=>e.stopPropagation()} onClick={()=>setCollapsed(v=>!v)}>{collapsed?"+":"−"}</button><button onMouseDown={e=>e.stopPropagation()} onClick={close}>×</button></div></header>{!collapsed&&<div className="ft-content">{children}</div>}</div>}
-function Panel({close}:{close:()=>void}){const [windows,setWindows]=useState<string[]>(["Aircraft"]),[scale,setScale]=useState(1);const flying=useValue(flying$), selected=useValue(selected$);const toggle=(n:string)=>setWindows(w=>w.includes(n)?w.filter(x=>x!==n):[...w,n]);return <div className="ft-root"><div className="ft-toolbar"><b>FLIGHT TAKEOVER</b><span className={flying?"ft-live":""}>{flying?"MANUAL":"STANDBY"}</span>{["Aircraft","Instruments","Camera","Settings"].map(n=><button key={n} className={windows.includes(n)?"ft-selected":""} onClick={()=>toggle(n)}>{n==="Settings"?"⚙ Settings":n}</button>)}<button disabled={!selected} onClick={()=>send("Release")}>Exit aircraft</button><button onClick={close}>×</button></div>{windows.map((n,i)=><Window key={n} name={n} width={n==="Settings"?650:n==="Instruments"?410:370} scale={scale} offset={i} close={()=>toggle(n)}>{n==="Aircraft"?<Aircraft/>:n==="Instruments"?<Instruments/>:n==="Camera"?<CameraPanel/>:<Settings scale={scale} setScale={setScale}/>}</Window>)}</div>}
+function Panel({close}:{close:()=>void}){const [windows,setWindows]=useState<string[]>(["Aircraft"]),[scale,setScale]=useState(1);const flying=useValue(flying$), selected=useValue(selected$);const toggle=(n:string)=>setWindows(w=>w.includes(n)?w.filter(x=>x!==n):[...w,n]);return <div className="ft-root"><div className="ft-toolbar"><b>NYOKO'S FLIGHT SIMULATOR</b><span className={flying?"ft-live":""}>{flying?"MANUAL":"STANDBY"}</span>{["Aircraft","Instruments","Camera","Settings"].map(n=><button key={n} className={windows.includes(n)?"ft-selected":""} onClick={()=>toggle(n)}>{n==="Settings"?"⚙ Settings":n}</button>)}<button disabled={!selected} onClick={()=>send("Release")}>Exit aircraft</button><button onClick={close}>×</button></div>{windows.map((n,i)=><Window key={n} name={n} width={n==="Settings"?650:n==="Instruments"?410:370} scale={scale} offset={i} close={()=>toggle(n)}>{n==="Aircraft"?<Aircraft/>:n==="Instruments"?<Instruments/>:n==="Camera"?<CameraPanel/>:<Settings scale={scale} setScale={setScale}/>}</Window>)}</div>}
 function Launcher(){const [open,setOpen]=useState(false);return <><Button src={FlightTakeoverSVG} variant="floating" onClick={()=>setOpen(x=>!x)}/>{createPortal(<div className="ft-root"><Radar/><ImpactAlert/></div>,document.body)}{open&&createPortal(<Panel close={()=>setOpen(false)}/>,document.body)}</>}
 const register:ModRegistrar=registry=>registry.append("GameTopLeft",Launcher);
 export default register;

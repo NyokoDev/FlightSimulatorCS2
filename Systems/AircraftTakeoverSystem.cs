@@ -119,23 +119,71 @@ namespace CS2FlightTakeover.Systems
             BankDegrees = math.degrees(math.atan2(-right.y,math.sqrt(right.x*right.x+right.z*right.z)));
             velocity = math.lerp(velocity,forward*Speed,(1f-math.exp(-dt*2f))*blend);
             var next = _position + velocity*dt;
-            float ground=0, sea=0;
-            bool hasGround=terrain!=null && terrain.Read(next,out ground);
-            bool hasWater=water!=null && water.Read(next,out sea);
-            SurfaceStatus=hasGround ? (hasWater?"Ground and water detection active":"Ground detection active; water unavailable") : "Ground detection unavailable";
-            if(CollisionEnabled && (hasGround||hasWater)) {
-                float floor=hasGround?ground:float.NegativeInfinity;
-                if(hasWater && sea>floor)floor=sea;
-                if(next.y<floor+3f && velocity.y<0f && _position.y>=floor+3f) {
-                    if (!impact) {
-                        ImpactAlert=hasWater&&(!hasGround||sea>ground)?"Water impact — continue flying":"Ground impact — continue flying";
-                        alertUntil=UnityEngine.Time.realtimeSinceStartup+5f;
-                        impact=true;
+            float ground = 0f, sea = 0f;
+
+            bool hasGround = terrain != null && terrain.Read(next, out ground);
+            bool hasWater = water != null && water.Read(next, out sea);
+
+            SurfaceStatus = hasGround
+                ? (hasWater
+                    ? "Ground and water detection active"
+                    : "Ground detection active; water unavailable")
+                : "Ground detection unavailable";
+
+            // Maintain the existing collision warnings.
+            if (CollisionEnabled && (hasGround || hasWater))
+            {
+                float floor = hasGround
+                    ? ground
+                    : float.NegativeInfinity;
+
+                if (hasWater && sea > floor)
+                    floor = sea;
+
+                if (next.y < floor + 3f &&
+                    velocity.y < 0f &&
+                    _position.y >= floor + 3f)
+                {
+                    if (!impact)
+                    {
+                        ImpactAlert = hasWater && (!hasGround || sea > ground)
+                            ? "Water impact — continue flying"
+                            : "Ground impact — continue flying";
+
+                        alertUntil = UnityEngine.Time.realtimeSinceStartup + 5f;
+                        impact = true;
                     }
                 }
             }
-            if (!CollisionEnabled || (!hasGround && !hasWater) || next.y > math.max(hasGround?ground:float.NegativeInfinity,hasWater?sea:float.NegativeInfinity)+5f) impact=false;
-            _position=next;
+
+            // Prevent the aircraft from penetrating the terrain.
+            // Horizontal movement, throttle and steering remain unchanged.
+            if (hasGround)
+            {
+                const float groundClearance = 3f;
+                float minimumAltitude = ground + groundClearance;
+
+                if (next.y <= minimumAltitude)
+                {
+                    next.y = minimumAltitude;
+
+                    // Cancel downward movement only.
+                    // Positive vertical movement remains available for takeoff.
+                    velocity.y = math.max(0f, velocity.y);
+                }
+            }
+
+            if (!CollisionEnabled ||
+                (!hasGround && !hasWater) ||
+                next.y > math.max(
+                    hasGround ? ground : float.NegativeInfinity,
+                    hasWater ? sea : float.NegativeInfinity
+                ) + 5f)
+            {
+                impact = false;
+            }
+
+            _position = next;
             if (BoundaryMode == "Wrap") {
                 _position.x = math.fmod(math.fmod(_position.x+HalfExtent,2f*HalfExtent)+2f*HalfExtent,2f*HalfExtent)-HalfExtent;
                 _position.z = math.fmod(math.fmod(_position.z+HalfExtent,2f*HalfExtent)+2f*HalfExtent,2f*HalfExtent)-HalfExtent;

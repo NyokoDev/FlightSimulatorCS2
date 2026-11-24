@@ -1,0 +1,66 @@
+How to use
+
+Video tutorial: Watch on YouTube
+Getting started
+
+    Subscribe to Nyoko's Flight Simulator on Paradox Mods.
+
+    Add the mod to your active playset and enable it.
+
+    Launch Cities: Skylines II and load your city.
+
+    Locate an aircraft flying around your city.
+
+    Open the Flight Takeover interface and select the aircraft you wish to control.
+
+    Take control of the aircraft and start exploring your city from above.
+
+Keyboard controls
+
+By default, aircraft controls are assigned to the numeric keypad (NUMPAD). You do not need a controller or joystick to use this modification.
+
+Open the mod's settings menu to review the available controls and configure your preferred input method.
+Controller and HOTAS support
+
+Nyoko's Flight Simulator supports controller-based flight controls, including experimental support for the Thrustmaster T-Flight HOTAS X.
+
+    Connect your preferred device to your computer.
+
+    Open the mod's settings menu.
+
+    Use the device detection option to recognize your connected hardware.
+
+    Review the available input settings before taking control of an aircraft.
+
+Compatibility may vary depending on your device, drivers, and system configuration.
+Navigation and radar
+
+The radar located in the bottom-left corner of your screen provides an overview of your surroundings and nearby airports, allowing you to navigate your city while maintaining control of your aircraft.
+
+Airport indicators help you identify nearby aviation facilities without having to return to the regular city-building camera.
+Collision detection
+
+The mod features experimental ground and water collision detection. When your aircraft comes into contact with terrain or water, a warning will appear on your screen.
+
+Collisions do not terminate your flight or prevent you from continuing to operate the aircraft. This behavior is intentional, allowing players to freely explore their cities without restrictive flight mechanics.
+Returning to regular gameplay
+
+Exit Flight Takeover through the mod's interface to relinquish control of the aircraft and return to regular Cities: Skylines II gameplay.
+Important information
+
+This modification was originally developed under the working title Flight Takeover while its final name was being decided. As a result, some interface elements, settings, internal files, and video tutorials may still reference Flight Takeover instead of Nyoko's Flight Simulator.
+
+This mod is currently in Alpha. Unexpected aircraft behavior, camera issues, input recognition problems, visual anomalies, and other bugs may occur.
+
+It is strongly recommended that you create a separate backup of your city before using this modification. Nyoko's Flight Simulator is intended for recreational gameplay and is not designed to accurately reproduce real-world flight physics or aviation procedures.
+
+Please report any issues through the official discussion thread or Discord, including your game version, mod version, input device, and a detailed description of the problem whenever possible. Important: I would recommend to start with aircraft on the air, aircraft on ground may give issues or unexpected behavior, you can still try but I'm working a solution specifically for ground aircraft.
+Testing & Compatibility
+
+Compatibility with other mods: Nyoko's Flight Simulator has been tested alongside both Extra Airport Network and Realistic Aviation. No compatibility issues or conflicts have been identified during testing so far.
+
+Aircraft release and simulation continuity: During testing, aircraft successfully resumed their normal simulation behavior after pressing the Release button. Once released, the aircraft returned to the game's AI control and continued toward its intended destination.
+
+HOTAS compatibility: The Thrustmaster T-Flight HOTAS X was personally tested throughout development, with no issues encountered so far. Users can also adjust the input deadzone directly through the mod's settings interface to accommodate their hardware and personal preferences.
+
+Xbox controller compatibility has not been tested yet but any joystick should work with this mod. Future plans for this mod are ahead.
