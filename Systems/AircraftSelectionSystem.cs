@@ -24,6 +24,7 @@ namespace CS2FlightTakeover.Systems
             return false;
         }
 
+        internal void SelectOwned(Entity entity) { Selected = entity; }
         public void Release() { Selected = Entity.Null; }
 
         protected override void OnUpdate()

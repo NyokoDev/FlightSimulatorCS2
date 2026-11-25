@@ -13,15 +13,17 @@
 	<Thumbnail Value="Properties/PDX_TMB.png" />
 
 	<!-- Gallery screenshots -->
-	<Screenshot Value="Properties/Thumbnail.png" />
-	<Screenshot Value="Properties/Thumbnai2l.png" />
-	<Screenshot Value="Properties/THUMBNAIL3.png" />
-	<Screenshot Value="Properties/THUMBNAIL4.png" />
-	<Screenshot Value="Properties/THUMBNAIL5.png" />
-	<Screenshot Value="Properties/THUMBNAIL6.png" />
-	<Screenshot Value="Properties/THUMBNAIL7.png" />
-	<Screenshot Value="Properties/THUMBNAIL8.png" />
-	<Screenshot Value="Properties/THUMBNAIL9.png" />
+	<Screenshot Value="Properties/NyokoFlightSimulator_01.png" />
+	<Screenshot Value="Properties/NyokoFlightSimulator_02.png" />
+	<Screenshot Value="Properties/NyokoFlightSimulator_03.png" />
+	<Screenshot Value="Properties/NyokoFlightSimulator_04.png" />
+	<Screenshot Value="Properties/NyokoFlightSimulator_05.png" />
+	<Screenshot Value="Properties/NyokoFlightSimulator_06.png" />
+	<Screenshot Value="Properties/NyokoFlightSimulator_07.png" />
+	<Screenshot Value="Properties/NyokoFlightSimulator_08.png" />
+	<Screenshot Value="Properties/NyokoFlightSimulator_09.png" />
+	<Screenshot Value="Properties/NyokoFlightSimulator_09.png" />
+	
 
 	<!-- Category -->
 	<Tag Value="Code Mod" />
@@ -30,13 +32,13 @@
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/nyokos-flight-simulator.1951619/" />
 	
 	<!-- Version -->
-	<ModVersion Value="v0.3 Alpha" />
+	<ModVersion Value="v0.4 Alpha" />
 
 	<!-- Game compatibility -->
 	<GameVersion Value="1.6.*" />
 
 	<!-- Changelog -->
-	<ChangeLog Value="Modern aircraft selection menu." />
+	<ChangeLog Value="Start a Flight screen. Improve Flight Model. Add ground services." />
 
 	<!-- External links -->
 	<ExternalLink Type="discord" Url="https://discord.gg/5gZgRNm29e" />

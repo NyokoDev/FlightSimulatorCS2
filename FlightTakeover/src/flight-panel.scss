@@ -237,4 +237,56 @@
     background: rgba(255, 255, 255, 0.06);
     color: #a6b5c6;
     font-size: 12rem;
-}
+}.ft-start-list { max-height: 180rem; overflow-y: auto; display: flex; flex-direction: column; }
+.ft-start-list button { margin-bottom: 3rem; text-align: left; }
+.ft-start > button { margin-top: 6rem; }
+.ft-flight-planner {position:absolute;left:14%;right:14%;top:15%;bottom:17%;pointer-events:auto;background:#151d29f5;border:1rem solid #53677d;border-radius:14rem;padding:22rem;display:flex;flex-direction:column;z-index:10;}
+.ft-flight-planner header,.ft-session header {display:flex;justify-content:space-between;align-items:center;}
+.ft-flight-planner h1 {font-size:34rem;margin:4rem 0 14rem;color:white;}.ft-flight-planner h2{font-size:22rem;}
+.ft-planner-body {display:flex;flex:1;min-height:0;}.ft-planner-aircraft{flex:1;min-width:0;display:flex;flex-direction:column;margin-right:20rem;}.ft-plane-grid{display:flex;flex-wrap:wrap;align-content:flex-start;overflow-y:auto;flex:1;}.ft-plane-grid button{width:31%;margin:1%;padding:0;overflow:hidden;display:flex;flex-direction:column;text-align:left;}.ft-plane-grid img,.ft-plane-placeholder{width:100%;height:115rem;object-fit:contain;background:#283849;}.ft-plane-grid b{padding:9rem;overflow-wrap:break-word;}.ft-plane-placeholder{display:flex;align-items:center;justify-content:center;color:#aab5c0;}.ft-planner-location{width:250rem;overflow-y:auto;}.ft-planner-location label,.ft-service-fields label{display:flex;flex-direction:column;margin:5rem 0;}.ft-planner-location input,.ft-service-fields input,.ft-service-config select{background:#202a37;color:white;border:1rem solid #53677d;padding:6rem;width:100%;}.ft-planner-location button{width:100%;margin:5rem 0;}.ft-departure-pick{position:absolute;inset:0;pointer-events:none;}.ft-crosshair{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:42rem;color:white;text-shadow:0 0 4rem black;}.ft-pick-actions{position:absolute;left:30%;right:30%;top:20%;background:#151d29;padding:12rem;pointer-events:auto;}.ft-session{position:absolute;right:14%;top:17%;width:340rem;max-height:65%;overflow-y:auto;pointer-events:auto;background:#151d29f5;padding:14rem;border-radius:12rem;}.ft-service-config{border-top:1rem solid #53677d;padding:8rem 0;}.ft-service-fields{display:flex;flex-wrap:wrap;}.ft-service-fields label{width:48%;margin-right:2%;}.ft-service-config button{width:100%;}
+
+.ft-raycast-surface {position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:auto;cursor:crosshair;}
+.ft-pick-actions {z-index:1;}
+
+.ft-service-options {max-height:140rem;overflow-y:auto;} .ft-service-options button{width:100%;margin-bottom:3rem;} .ft-service-config .ft-line button{width:auto;margin-left:5rem;} .ft-service-arrived{color:#75d9a0!important;} .ft-service-moving{color:#8ac8ff!important;} .ft-window .ft-content{max-height:65vh;overflow-y:auto;}
+
+/* Ground operations: opaque, compact service rows and live Cohtml-safe sliders. */
+.ft-ground-window { background:#191e26; border:1rem solid #485362; border-radius:12rem; }
+.ft-ground-window header { background:#222a35; border-radius:12rem 12rem 0 0; padding:10rem 12rem; }
+.ft-ground-window .ft-content { padding:12rem; max-height:65vh; overflow-y:auto; }
+.ft-ground-window b { font-size:14rem; font-weight:600; }
+.ft-ground-brake { display:flex; flex-direction:row; justify-content:space-between; align-items:center; padding:8rem 10rem; background:#242d37; border-radius:7rem; }
+.ft-ground-section { margin:13rem 0 7rem; }
+.ft-ground-section small,.ft-ground-brake small { margin-top:3rem; }
+.ft-ground-window .ft-pushback-controls button { padding:7rem 5rem; }
+.ft-ground-window .ft-service-config { border-top:1rem solid #37424e; padding:9rem 0; }
+.ft-service-row { display:flex; flex-direction:row; align-items:center; }
+.ft-service-title { flex:1; min-width:0; }
+.ft-service-title small { margin-top:3rem; }
+.ft-ground-window .ft-service-row .ft-service-gear { width:34rem; height:34rem; padding:6rem; margin:0 6rem 0 4rem; display:flex; align-items:center; justify-content:center; }
+.ft-gear-icon { width:18rem; height:18rem; flex-shrink:0; }
+.ft-toolbar-settings { display:flex; flex-direction:row; align-items:center; }
+.ft-toolbar-settings .ft-gear-icon { margin-right:5rem; }
+.ft-ground-window .ft-service-row .ft-service-request { width:86rem; padding:7rem 5rem; }
+.ft-service-editor { background:#222a35; margin-top:9rem; padding:10rem; border-radius:8rem; }
+.ft-service-editor .ft-line button { width:auto; font-size:12rem; padding:5rem 8rem; }
+.ft-service-asset-name { color:#d2dbe7; font-size:12rem; margin:5rem 0 9rem; overflow-wrap:break-word; }
+.ft-service-editor .ft-range { margin:10rem 0; }
+.ft-service-editor .ft-range-label { font-size:12rem; }
+.ft-service-editor .ft-slider { height:26rem; margin-top:2rem; }
+.ft-service-editor .ft-slider-ends { font-size:11rem; }
+.ft-ground-window .ft-ground-full { width:100%; margin-top:7rem; }
+.ft-ground-window .ft-end-flight { background:#302b30; color:#f3c9c9; }
+.ft-service-error { color:#ffaeaa!important; }
+
+/* Aircraft ground-service presets: compact, Cohtml-safe button list. */
+.ft-ground-presets { background:#242d37; border:1rem solid #3b495a; border-radius:8rem; margin:12rem 0 7rem; padding:10rem; }
+.ft-ground-presets .ft-preset-name { font-size:16rem; font-weight:600; color:#f2f6fa; margin:5rem 0 2rem; }
+.ft-ground-presets small { display:block; margin:3rem 0; overflow-wrap:break-word; }
+.ft-ground-presets .ft-row { margin-top:6rem; }
+.ft-ground-presets .ft-preset-dirty { color:#efc47f; }
+.ft-preset-list { max-height:155rem; overflow-y:auto; margin-top:7rem; }
+.ft-preset-list button { display:flex; flex-direction:column; align-items:flex-start; width:100%; text-align:left; margin-bottom:3rem; padding:6rem 9rem; }
+.ft-preset-list button small { font-size:11rem; }
+.ft-preset-new { display:flex; flex-direction:column; margin-top:7rem; }
+.ft-preset-new input { width:100%; margin-bottom:5rem; }

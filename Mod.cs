@@ -17,6 +17,11 @@ namespace CS2FlightTakeover
             updateSystem.UpdateAfter<AircraftSelectionSystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateAfter<FlightInputSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAfter<AircraftTakeoverSystem>(SystemUpdatePhase.GameSimulation);
+            updateSystem.UpdateBefore<AircraftPoseSyncSystem, Game.Rendering.PreCullingSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateBefore<StartFlight.GroundServiceCreationSystem, Game.Tools.GenerateObjectsSystem>(SystemUpdatePhase.Modification1);
+            updateSystem.UpdateBefore<StartFlight.GroundServiceRenderSystem, Game.Rendering.PreCullingSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAt<StartFlight.AircraftPlacementTool>(SystemUpdatePhase.ToolUpdate);
+            updateSystem.UpdateAfter<StartFlight.StartFlightSystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateAfter<AircraftCameraSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAfter<NavigationSystem>(SystemUpdatePhase.UIUpdate);
             updateSystem.UpdateAfter<FlightUISystem>(SystemUpdatePhase.UIUpdate);

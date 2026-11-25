@@ -13,6 +13,7 @@ namespace CS2FlightTakeover.UI
 {
     public sealed partial class FlightUISystem : UISystemBase
     {
+        private StartFlight.StartFlightSystem StartFlightMode => World.GetExistingSystemManaged<StartFlight.StartFlightSystem>();
         private const string Group = "CS2FlightTakeover";
         private AircraftDiscoverySystem Discovery => World.GetExistingSystemManaged<AircraftDiscoverySystem>();
         private AircraftSelectionSystem Selection => World.GetExistingSystemManaged<AircraftSelectionSystem>();
@@ -26,6 +27,36 @@ namespace CS2FlightTakeover.UI
         protected override void OnCreate()
         {
             base.OnCreate();
+            AddUpdateBinding(new GetterValueBinding<string>(Group,"StartState",()=>StartFlightMode?.State??"Idle"));
+            AddUpdateBinding(new GetterValueBinding<string>(Group,"StartStatus",()=>StartFlightMode?.Status??""));
+            AddUpdateBinding(new GetterValueBinding<string[]>(Group,"StartAircraft",()=>StartFlightMode?.Aircraft??Array.Empty<string>(),new ArrayWriter<string>(new StringWriter())));
+            AddUpdateBinding(new GetterValueBinding<string[]>(Group,"StartStands",()=>StartFlightMode?.Stands??Array.Empty<string>(),new ArrayWriter<string>(new StringWriter())));
+            AddUpdateBinding(new GetterValueBinding<string[]>(Group,"StartServices",()=>StartFlightMode?.Services??Array.Empty<string>(),new ArrayWriter<string>(new StringWriter())));
+            AddUpdateBinding(new GetterValueBinding<string>(Group,"GroundSnapshot",()=>StartFlightMode?.GroundSnapshot??"0|Idle|0|Flight is not ready||0:0"));
+            AddBinding(new TriggerBinding<string>(Group,"SelectGroundPreset",v=>StartFlightMode?.SelectGroundPreset(v)));
+            AddBinding(new TriggerBinding<string>(Group,"EditGroundPreset",v=>StartFlightMode?.EditGroundPreset(v)));
+            AddBinding(new TriggerBinding<string>(Group,"SaveGroundPreset",v=>StartFlightMode?.SaveGroundPreset(v)));
+            AddBinding(new TriggerBinding(Group,"RefreshGroundAssets",()=>StartFlightMode?.RefreshGroundAssets()));
+            AddUpdateBinding(new GetterValueBinding<string>(Group,"ServiceSession",()=> (StartFlightMode?.ServiceSession??0).ToString(CultureInfo.InvariantCulture)));
+            AddUpdateBinding(new GetterValueBinding<string[]>(Group,"ServiceStates",()=>StartFlightMode?.ServiceStates??Array.Empty<string>(),new ArrayWriter<string>(new StringWriter())));
+            AddUpdateBinding(new GetterValueBinding<string[]>(Group,"ServiceAssets",()=>StartFlightMode?.ServiceAssets??Array.Empty<string>(),new ArrayWriter<string>(new StringWriter())));
+            AddUpdateBinding(new GetterValueBinding<string>(Group,"CustomDeparture",()=>StartFlightMode?.Departure??""));
+            AddUpdateBinding(new GetterValueBinding<string>(Group,"DepartureRevision",()=> (StartFlightMode?.DepartureRevision??0).ToString()));
+            AddUpdateBinding(new GetterValueBinding<bool>(Group,"PickingDeparture",()=>StartFlightMode?.PickingDeparture??false));
+            AddUpdateBinding(new GetterValueBinding<bool>(Group,"HasDeparture",()=>StartFlightMode?.HasDeparture??false));
+            AddBinding(new TriggerBinding<string>(Group,"CaptureDeparture",v=>StartFlightMode?.CaptureDeparture(v)));
+            AddBinding(new TriggerBinding(Group,"StartScan",()=>StartFlightMode?.Scan()));
+            AddBinding(new TriggerBinding<string>(Group,"StartBegin",v=>StartFlightMode?.Begin(v)));
+            AddBinding(new TriggerBinding(Group,"StartReady",()=>StartFlightMode?.Ready()));
+            AddBinding(new TriggerBinding(Group,"StartEnd",()=>StartFlightMode?.End()));
+            AddBinding(new TriggerBinding<string>(Group,"StartService",v=>StartFlightMode?.Service(v)));
+            AddBinding(new TriggerBinding<string>(Group,"StartServicePosition",v=>StartFlightMode?.QueueServicePosition(v)));
+            AddUpdateBinding(new GetterValueBinding<string>(Group,"PushbackState",()=> (Takeover?.IsOwnedFlight==true ? Takeover.PushbackDirection : 0).ToString()));
+            AddUpdateBinding(new GetterValueBinding<bool>(Group,"GroundServiceAvailable",()=>StartFlightMode?.CanService??false));
+            AddBinding(new TriggerBinding(Group,"StartDismiss",()=>StartFlightMode?.Dismiss()));
+            AddUpdateBinding(new GetterValueBinding<bool>(Group,"ParkingBrake",()=>Takeover?.ParkingBrake??false));
+            AddBinding(new TriggerBinding<string>(Group,"Pushback",v=>{if(StartFlightMode?.State=="Flying"&&Takeover!=null&&Takeover.IsOwnedFlight&&Takeover.Controlled==StartFlightMode.Plane&&int.TryParse(v,out int n)&&n>=0&&n<=3&&(n==0||(Takeover.Grounded&&Takeover.Speed<.5f))){Takeover.SetPushback(n);}}));
+            AddBinding(new TriggerBinding(Group,"ToggleBrake",()=>{if(StartFlightMode?.State=="Flying"&&Takeover!=null&&Takeover.IsOwnedFlight&&Takeover.Controlled==StartFlightMode.Plane&&Takeover.Grounded&&Takeover.PushbackDirection==0)Takeover.ParkingBrake=!Takeover.ParkingBrake;}));
             AddUpdateBinding(new GetterValueBinding<string[]>(Group,"NavigationMarkers",()=>World.GetExistingSystemManaged<NavigationSystem>()?.Markers??Array.Empty<string>(),new ArrayWriter<string>(new StringWriter())));
             AddUpdateBinding(new GetterValueBinding<string>(Group,"NavigationPosition",()=>Takeover==null?"0|0|0":string.Join("|",Takeover.Position.x.ToString(CultureInfo.InvariantCulture),Takeover.Position.z.ToString(CultureInfo.InvariantCulture),Takeover.HeadingDegrees.ToString(CultureInfo.InvariantCulture))));
             AddUpdateBinding(new GetterValueBinding<string>(Group,"ImpactAlert",()=>Takeover?.ImpactAlert??""));
@@ -67,6 +98,15 @@ namespace CS2FlightTakeover.UI
             AddBinding(new TriggerBinding(Group, "Stop", Stop));
             AddBinding(new TriggerBinding(Group, "Follow", ToggleFollow));
             AddBinding(new TriggerBinding(Group, "Release", Release));
+        }
+        protected override void OnUpdate()
+        {
+            StartFlightMode?.MaintainSession();
+            StartFlightMode?.MaintainPlacementActivation();
+            // Ground service processing is independent of vehicle visibility and PreCulling.
+            // The existing render callback may also call it; the frame guard prevents double steps.
+            StartFlightMode?.AdvanceServices();
+            base.OnUpdate();
         }
         private string[] GetAircraft()
         {
@@ -110,11 +150,11 @@ namespace CS2FlightTakeover.UI
         }
         private void SelectAircraft(string id)
         {
-            if (Takeover != null && Takeover.Active) return;
+            if ((StartFlightMode != null && (StartFlightMode.State != "Idle" || StartFlightMode.PickingDeparture)) || (Takeover != null && Takeover.Active)) return;
             if (!TryParseEntity(id, out Entity entity) || Selection == null) return;
             if (!Selection.TrySelect(entity)) return;
             if (Takeover != null && Takeover.Active) Takeover.Stop();
-            if (Camera != null) Camera.FollowEnabled = true;
+            if (Camera != null) { if (Camera.Mode == "Cinematic") Camera.SetMode("Chase"); Camera.FollowEnabled = true; }
         }
 
         private string GetAircraftThumbnail(Entity aircraft)
@@ -154,8 +194,8 @@ namespace CS2FlightTakeover.UI
         }
         private void TakeControl()
         {
-            if (Takeover == null || Selection == null || !Selection.HasSelection) return;
-            if (Takeover.Begin(Selection.Selected) && Camera != null) Camera.FollowEnabled = true;
+            if ((StartFlightMode != null && (StartFlightMode.State != "Idle" || StartFlightMode.PickingDeparture)) || Takeover == null || Takeover.Active || Selection == null || !Selection.HasSelection) return;
+            if (Takeover.Begin(Selection.Selected) && Camera != null) { if (Camera.Mode == "Cinematic") Camera.SetMode("Chase"); Camera.FollowEnabled = true; }
         }
         private void Stop() { Takeover?.Stop(); }
         private void ToggleFollow()
@@ -164,6 +204,6 @@ namespace CS2FlightTakeover.UI
             if (Camera.FollowEnabled) Camera.StopFollow();
             else if (Selection != null && Selection.HasSelection) Camera.FollowEnabled = true;
         }
-        private void Release() { Takeover?.Stop(); Camera?.StopFollow(); Selection?.Release(); }
+        private void Release() { if(StartFlightMode?.PickingDeparture == true) StartFlightMode.CaptureDeparture("cancel"); if(StartFlightMode != null && StartFlightMode.State != "Idle") {StartFlightMode?.End();return;} Takeover?.Stop(); Camera?.StopFollow(); Selection?.Release(); }
     }
 }
